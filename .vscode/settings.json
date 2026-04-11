@@ -3,7 +3,11 @@
         "autocfg",
         "Budden",
         "bytemuck",
+        "codegen",
+        "debuginfo",
+        "katex",
         "libm",
+        "rustdoc",
         "sbuf"
     ]
 }

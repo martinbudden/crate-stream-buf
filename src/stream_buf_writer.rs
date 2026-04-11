@@ -49,8 +49,8 @@ impl<'a> StreamBufWriter<'a> {
     }
 
     pub fn bytes_remaining(&self) -> usize {
-        let rem: isize = self.buf.len() as isize - self.pos as isize;
-        if rem <= 0 { 0_usize } else { rem as usize }
+        let rem: isize = self.buf.len().cast_signed() - self.pos.cast_signed();
+        if rem <= 0 { 0_usize } else { rem.cast_unsigned() }
     }
 
     pub fn is_available(&self, size: usize) -> bool {
@@ -180,7 +180,7 @@ impl<'a> StreamBufWriter<'a> {
     /// ```
     pub fn write_f32(&mut self, value: f32) {
         let bits = value.to_bits().cast_signed();
-        self.write_u32(bits as u32);
+        self.write_u32(bits.cast_unsigned());
     }
 
     pub fn fill_without_advancing(&mut self, data: u8, len: usize) -> bool {
@@ -229,7 +229,7 @@ impl<'a> StreamBufWriter<'a> {
     pub fn write_str_with_zero_terminator(&mut self, src: &str) -> usize {
         let write_size = src.len() + 1;
         if self.is_available(write_size) {
-            self.write_str(src);
+            _ = self.write_str(src);
             self.write_u8(0);
             return write_size;
         }
@@ -237,16 +237,16 @@ impl<'a> StreamBufWriter<'a> {
     }
 }
 
-/// Access StreamBufWriter component by index
-impl<'a> Index<usize> for StreamBufWriter<'a> {
+/// Access `StreamBufWriter` component by index
+impl Index<usize> for StreamBufWriter<'_> {
     type Output = u8;
     fn index(&self, index: usize) -> &u8 {
         &self.buf[index]
     }
 }
 
-/// Set StreamBufWriter component by index
-impl<'a> IndexMut<usize> for StreamBufWriter<'a> {
+/// Set `StreamBufWriter` component by index
+impl IndexMut<usize> for StreamBufWriter<'_> {
     fn index_mut(&mut self, index: usize) -> &mut u8 {
         &mut self.buf[index]
     }
@@ -271,6 +271,7 @@ buf.write_u16(0x1234);
 */
 #[cfg(any(debug_assertions, test))]
 mod tests {
+    #![allow(clippy::float_cmp)]
     use super::*;
     use vector_quaternion_matrix::Vector3d;
 
@@ -371,92 +372,92 @@ mod tests {
 
         let mut sbuf = StreamBufWriter::new(&mut buf);
 
-        assert_eq!(true, sbuf.is_empty());
-        assert_eq!(false, sbuf.is_full());
+        assert!(sbuf.is_empty());
+        assert!(sbuf.is_full());
         assert_eq!(BUF_SIZE, sbuf.bytes_remaining());
         assert_eq!(0, sbuf.bytes_written());
-        assert_eq!(true, sbuf.is_available(0));
-        assert_eq!(true, sbuf.is_available(1));
-        assert_eq!(true, sbuf.is_available(2));
-        assert_eq!(false, sbuf.is_available(3));
+        assert!(sbuf.is_available(0));
+        assert!(sbuf.is_available(1));
+        assert!(sbuf.is_available(2));
+        assert!(!sbuf.is_available(3));
 
         sbuf.write_u16(0xABCD);
 
-        assert_eq!(false, sbuf.is_empty());
+        assert!(!sbuf.is_empty());
         assert_eq!(2, sbuf.pos());
-        assert_eq!(true, sbuf.is_full());
+        assert!(sbuf.is_full());
         assert_eq!(0, sbuf.bytes_remaining());
         assert_eq!(2, sbuf.bytes_written());
-        assert_eq!(true, sbuf.is_available(0));
-        assert_eq!(false, sbuf.is_available(1));
-        assert_eq!(false, sbuf.is_available(2));
-        assert_eq!(false, sbuf.is_available(3));
+        assert!(sbuf.is_available(0));
+        assert!(!sbuf.is_available(1));
+        assert!(!sbuf.is_available(2));
+        assert!(!sbuf.is_available(3));
 
         assert_eq!(0xCD, sbuf[0]);
         assert_eq!(0xAB, sbuf[1]);
 
         sbuf.reset();
-        assert_eq!(true, sbuf.is_empty());
-        assert_eq!(false, sbuf.is_full());
+        assert!(sbuf.is_empty());
+        assert!(!sbuf.is_full());
         assert_eq!(BUF_SIZE, sbuf.bytes_remaining());
         assert_eq!(0, sbuf.bytes_written());
-        assert_eq!(true, sbuf.is_available(0));
-        assert_eq!(true, sbuf.is_available(1));
-        assert_eq!(true, sbuf.is_available(2));
-        assert_eq!(false, sbuf.is_available(3));
+        assert!(sbuf.is_available(0));
+        assert!(sbuf.is_available(1));
+        assert!(sbuf.is_available(2));
+        assert!(!sbuf.is_available(3));
 
         // try and write a u32. this will fail since there is not enough room
-        sbuf.write_u32(0xABCD1234);
-        assert_eq!(true, sbuf.is_empty());
-        assert_eq!(false, sbuf.is_full());
+        sbuf.write_u32(0xABCD_1234);
+        assert!(sbuf.is_empty());
+        assert!(!sbuf.is_full());
         assert_eq!(BUF_SIZE, sbuf.bytes_remaining());
         assert_eq!(0, sbuf.bytes_written());
-        assert_eq!(true, sbuf.is_available(0));
-        assert_eq!(true, sbuf.is_available(1));
-        assert_eq!(true, sbuf.is_available(2));
-        assert_eq!(false, sbuf.is_available(3));
+        assert!(sbuf.is_available(0));
+        assert!(sbuf.is_available(1));
+        assert!(sbuf.is_available(2));
+        assert!(!sbuf.is_available(3));
 
         sbuf.write_u8(0xAB);
-        assert_eq!(false, sbuf.is_empty());
-        assert_eq!(false, sbuf.is_full());
+        assert!(!sbuf.is_empty());
+        assert!(!sbuf.is_full());
         assert_eq!(1, sbuf.bytes_remaining());
         assert_eq!(1, sbuf.bytes_written());
-        assert_eq!(true, sbuf.is_available(0));
-        assert_eq!(true, sbuf.is_available(1));
-        assert_eq!(false, sbuf.is_available(2));
-        assert_eq!(false, sbuf.is_available(3));
+        assert!(sbuf.is_available(0));
+        assert!(sbuf.is_available(1));
+        assert!(!sbuf.is_available(2));
+        assert!(!sbuf.is_available(3));
 
         // try and write a u16, this will fail since there is not enough room
         sbuf.write_u16(0xABCD);
-        assert_eq!(false, sbuf.is_empty());
-        assert_eq!(false, sbuf.is_full());
+        assert!(!sbuf.is_empty());
+        assert!(!sbuf.is_full());
         assert_eq!(1, sbuf.bytes_remaining());
         assert_eq!(1, sbuf.bytes_written());
-        assert_eq!(true, sbuf.is_available(0));
-        assert_eq!(true, sbuf.is_available(1));
-        assert_eq!(false, sbuf.is_available(2));
-        assert_eq!(false, sbuf.is_available(3));
+        assert!(sbuf.is_available(0));
+        assert!(sbuf.is_available(1));
+        assert!(!sbuf.is_available(2));
+        assert!(!sbuf.is_available(3));
 
         sbuf.write_u8(0xAB);
-        assert_eq!(false, sbuf.is_empty());
-        assert_eq!(true, sbuf.is_full());
+        assert!(!sbuf.is_empty());
+        assert!(sbuf.is_full());
         assert_eq!(0, sbuf.bytes_remaining());
         assert_eq!(2, sbuf.bytes_written());
-        assert_eq!(true, sbuf.is_available(0));
-        assert_eq!(false, sbuf.is_available(1));
-        assert_eq!(false, sbuf.is_available(2));
-        assert_eq!(false, sbuf.is_available(3));
+        assert!(sbuf.is_available(0));
+        assert!(!sbuf.is_available(1));
+        assert!(!sbuf.is_available(2));
+        assert!(!sbuf.is_available(3));
 
         // try and write a u8, this will fail since there is not enough room
         sbuf.write_u8(0xAB);
-        assert_eq!(false, sbuf.is_empty());
-        assert_eq!(true, sbuf.is_full());
+        assert!(!sbuf.is_empty());
+        assert!(sbuf.is_full());
         assert_eq!(0, sbuf.bytes_remaining());
         assert_eq!(2, sbuf.bytes_written());
-        assert_eq!(true, sbuf.is_available(0));
-        assert_eq!(false, sbuf.is_available(1));
-        assert_eq!(false, sbuf.is_available(2));
-        assert_eq!(false, sbuf.is_available(3));
+        assert!(sbuf.is_available(0));
+        assert!(!sbuf.is_available(1));
+        assert!(!sbuf.is_available(2));
+        assert!(!sbuf.is_available(3));
     }
 
     #[test]
@@ -466,7 +467,7 @@ mod tests {
         let mut sbuf = StreamBufWriter::new(&mut buf);
 
         assert_eq!(BUF_SIZE, sbuf.bytes_remaining());
-        sbuf.fill_without_advancing(0xFF, BUF_SIZE);
+        _ = sbuf.fill_without_advancing(0xFF, BUF_SIZE);
         assert_eq!(BUF_SIZE, sbuf.bytes_remaining());
         assert_eq!(0xFF, sbuf[0]);
         assert_eq!(0xFF, sbuf[1]);
@@ -475,7 +476,7 @@ mod tests {
         assert_eq!(0xFF, sbuf[4]);
         assert_eq!(0xFF, sbuf[5]);
 
-        sbuf.write_str("Hello");
+        _ = sbuf.write_str("Hello");
         assert_eq!(5, sbuf.bytes_written());
         assert_eq!(BUF_SIZE - 5, sbuf.bytes_remaining());
         assert_eq!('H', sbuf[0] as char);
@@ -488,9 +489,9 @@ mod tests {
         sbuf.reset();
         assert_eq!(0, sbuf.bytes_written());
         assert_eq!(BUF_SIZE, sbuf.bytes_remaining());
-        sbuf.fill_without_advancing(0xFF, BUF_SIZE);
+        _ = sbuf.fill_without_advancing(0xFF, BUF_SIZE);
 
-        sbuf.write_str_with_zero_terminator("Hello");
+        _ = sbuf.write_str_with_zero_terminator("Hello");
         assert_eq!(6, sbuf.bytes_written());
         assert_eq!(BUF_SIZE - 6, sbuf.bytes_remaining());
         assert_eq!('H', sbuf[0] as char);
@@ -521,12 +522,12 @@ mod tests {
 
         sbuf.write_u16(19);
 
-        sbuf.write_f32(3.14159);
+        sbuf.write_f32(3.12345);
         assert_eq!(11, sbuf.bytes_written());
         assert_eq!(BUF_SIZE - 11, sbuf.bytes_remaining());
-        assert_eq!(true, sbuf.is_available(BUF_SIZE - 12));
-        assert_eq!(true, sbuf.is_available(BUF_SIZE - 11));
-        assert_eq!(false, sbuf.is_available(BUF_SIZE - 10));
+        assert!(sbuf.is_available(BUF_SIZE - 12));
+        assert!(sbuf.is_available(BUF_SIZE - 11));
+        assert!(!sbuf.is_available(BUF_SIZE - 10));
 
         let mut sbuf_reader: StreamBufReader = sbuf.into();
         assert_eq!(0, sbuf_reader.bytes_read());
@@ -545,7 +546,7 @@ mod tests {
         assert_eq!(4, sbuf_reader.bytes_remaining());
 
         let v4 = sbuf_reader.read_f32();
-        assert_eq!(3.14159, v4);
+        assert_eq!(3.12345, v4);
         assert_eq!(0, sbuf_reader.bytes_remaining());
     }
     #[test]

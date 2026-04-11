@@ -59,8 +59,8 @@ impl<'a> StreamBufReader<'a> {
 
     pub fn bytes_remaining(&self) -> usize {
         //let rem: isize = self.size as isize - self.pos as isize;
-        let rem: isize = self.buf.len() as isize - self.pos as isize;
-        if rem <= 0 { 0_usize } else { rem as usize }
+        let rem: isize = self.buf.len().cast_signed() - self.pos.cast_signed();
+        if rem <= 0 { 0_usize } else { rem.cast_unsigned() }
     }
 
     pub fn is_remaining(&self, size: usize) -> bool {
@@ -83,7 +83,7 @@ impl<'a> StreamBufReader<'a> {
         self.buf[index]
     }
 
-    /// Return a u8 read from the stream_buf.
+    /// Return a u8 read from the `StreamBuf`.
     /// ```
     /// # use stream_buf::StreamBufReader;
     ///
@@ -104,7 +104,7 @@ impl<'a> StreamBufReader<'a> {
         self.buf[pos]
     }
 
-    /// Return a u16 read from the stream_buf.
+    /// Return a u16 read from the `StreamBuf`.
     /// ```
     /// # use stream_buf::StreamBufReader;
     ///
@@ -125,7 +125,7 @@ impl<'a> StreamBufReader<'a> {
         u16::from_le_bytes([self.buf[pos], self.buf[pos + 1]])
     }
 
-    /// Return a u32 read from the stream_buf.
+    /// Return a u32 read from the `StreamBuf`.
     /// ```
     /// # use stream_buf::StreamBufReader;
     ///
@@ -155,7 +155,7 @@ impl<'a> StreamBufReader<'a> {
         */
     }
 
-    /// Return a u16 read from the stream_buf.
+    /// Return a u16 read from the `StreamBuf`.
     /// ```
     /// # use stream_buf::StreamBufReader;
     ///
@@ -176,7 +176,7 @@ impl<'a> StreamBufReader<'a> {
         u16::from_be_bytes([self.buf[pos], self.buf[pos + 1]])
     }
 
-    /// Return a u16 read from the stream_buf.
+    /// Return a u16 read from the `StreamBuf`.
     /// ```
     /// # use stream_buf::StreamBufReader;
     ///
@@ -197,7 +197,7 @@ impl<'a> StreamBufReader<'a> {
         u32::from_be_bytes([self.buf[pos], self.buf[pos + 1], self.buf[pos + 2], self.buf[pos + 3]])
     }
 
-    /// Return an f32 read from the stream_buf.
+    /// Return an f32 read from the `StreamBuf`.
     /// ```
     /// # use stream_buf::StreamBufReader;
     ///
@@ -217,7 +217,7 @@ impl<'a> StreamBufReader<'a> {
         f32::from_bits(bits)
     }
 
-    /// Read an array from the stream_buf.
+    /// Read an array from the `StreamBuf`.
     /// Return the length read.
     /// ```
     /// # use stream_buf::StreamBufReader;
@@ -242,8 +242,8 @@ impl<'a> StreamBufReader<'a> {
     }
 }
 
-/// Access StreamBuf component by index
-impl<'a> Index<usize> for StreamBufReader<'a> {
+/// Access `stream_buf` component by index
+impl Index<usize> for StreamBufReader<'_> {
     type Output = u8;
     fn index(&self, index: usize) -> &u8 {
         &self.buf[index]
@@ -252,6 +252,7 @@ impl<'a> Index<usize> for StreamBufReader<'a> {
 
 #[cfg(any(debug_assertions, test))]
 mod tests {
+    #![allow(clippy::float_cmp)]
     use super::*;
 
     #[test]
@@ -277,7 +278,7 @@ mod tests {
 
         assert_eq!(0, sbuf_reader.pos());
         assert_eq!(0, sbuf_reader.bytes_read());
-        assert_eq!(true, sbuf_reader.is_remaining(buf_size));
+        assert!(sbuf_reader.is_remaining(buf_size));
         assert_eq!(buf_size, sbuf_reader.bytes_remaining());
 
         let v1 = sbuf_reader.read_u8();
@@ -291,7 +292,7 @@ mod tests {
         assert_eq!(buf_size - 3, sbuf_reader.bytes_remaining());
 
         let v3 = sbuf_reader.read_u32();
-        assert_eq!(0x605f4e3d, v3);
+        assert_eq!(0x605f_4e3d, v3);
         assert_eq!(7, sbuf_reader.bytes_read());
         assert_eq!(buf_size - 7, sbuf_reader.bytes_remaining());
 
@@ -311,7 +312,7 @@ mod tests {
         let buf = [0xec, 0x51, 0x9a, 0x44];
         let mut sbuf_reader = StreamBufReader::new(&buf);
         let v = sbuf_reader.read_f32();
-        assert_eq!(1234.56, v);
+        assert_eq!(1_234.56_f32, v);
     }
 
     #[test]
