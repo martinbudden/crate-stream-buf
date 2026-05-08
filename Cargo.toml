@@ -10,7 +10,6 @@ readme = "README.md"
 rustdoc-args = ["--html-in-header", "katex-header.html"]
 
 [dependencies]
-vector-quaternion-matrix = { git = "https://github.com/martinbudden/Crate-vector_quaternion_matrix" }
 
 # see https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]
