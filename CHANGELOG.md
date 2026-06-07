@@ -23,6 +23,12 @@ Once the API has stabilized this project will adopt semantic versioning, the fir
 
 ### Security
 
+## [0.1.1] - 2023-06-xx
+
+### Removed
+
+- Removed `katex-header.html`.
+
 ## [0.1.0] - 2023-04-25
 
 Initial release.
