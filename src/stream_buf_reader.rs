@@ -3,7 +3,7 @@
 use core::mem;
 use core::ops::Index;
 
-/// Simple deserializer
+/// Simple deserializer.
 pub struct StreamBufReader<'a> {
     pos: usize,
     buf: &'a [u8],
@@ -17,7 +17,8 @@ Used in functions, structs, and generics to link the lifetimes of multiple refer
 The name 'a is conventional; you can use others like 'b, but 'a is standard for the first lifetime
 */
 impl<'a> StreamBufReader<'a> {
-    pub fn new(buf: &'a [u8]) -> Self {
+    #[must_use]
+    pub const fn new(buf: &'a [u8]) -> Self {
         Self {
             pos: 0,
             //size: buf.len(),
@@ -25,22 +26,17 @@ impl<'a> StreamBufReader<'a> {
         }
     }
 
-    /*pub fn new(buf: &'a [u8], bytes_written: usize) -> Self {
-        Self {
-            pos: 0,
-            size: bytes_written,
-            buf,
-        }
-    }*/
-
+    #[must_use]
     pub fn get_data(&self) -> &'a [u8] {
         self.buf
     }
 
+    #[must_use]
     pub fn get_data_slice(&self) -> &'a [u8] {
         &self.buf[..self.pos]
     }
 
+    #[must_use]
     pub fn pos(&self) -> usize {
         self.pos
     }
@@ -49,24 +45,29 @@ impl<'a> StreamBufReader<'a> {
         self.pos = 0;
     }
 
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.pos == 0
     }
 
+    #[must_use]
     pub fn is_full(&self) -> bool {
         self.pos >= self.buf.len()
     }
 
+    #[must_use]
     pub fn bytes_remaining(&self) -> usize {
         //let rem: isize = self.size as isize - self.pos as isize;
         let rem: isize = self.buf.len().cast_signed() - self.pos.cast_signed();
         if rem <= 0 { 0_usize } else { rem.cast_unsigned() }
     }
 
+    #[must_use]
     pub fn is_remaining(&self, size: usize) -> bool {
         self.pos + size <= self.buf.len()
     }
 
+    #[must_use]
     pub fn bytes_read(&self) -> usize {
         self.pos
     }
@@ -75,10 +76,12 @@ impl<'a> StreamBufReader<'a> {
         self.pos = (self.pos + n).min(self.buf.len());
     }
 
+    #[must_use]
     pub fn get_ref(&self) -> &[u8] {
         &self.buf[..self.pos]
     }
 
+    #[must_use]
     pub fn at(&self, index: usize) -> u8 {
         self.buf[index]
     }
@@ -242,7 +245,7 @@ impl<'a> StreamBufReader<'a> {
     }
 }
 
-/// Access `stream_buf` component by index
+/// Access `stream_buf` component by index.
 impl Index<usize> for StreamBufReader<'_> {
     type Output = u8;
     fn index(&self, index: usize) -> &u8 {

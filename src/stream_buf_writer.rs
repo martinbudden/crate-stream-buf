@@ -1,10 +1,12 @@
 #![allow(unused)]
 
 use crate::stream_buf_reader::StreamBufReader;
-use core::mem;
-use core::ops::{Index, IndexMut};
+use core::{
+    mem,
+    ops::{Index, IndexMut},
+};
 
-/// Simple serializer/deserializer
+/// Simple serializer/deserializer.
 pub struct StreamBufWriter<'a> {
     pos: usize,
     buf: &'a mut [u8],
@@ -18,18 +20,22 @@ Used in functions, structs, and generics to link the lifetimes of multiple refer
 The name 'a is conventional; you can use others like 'b, but 'a is standard for the first lifetime
 */
 impl<'a> StreamBufWriter<'a> {
-    pub fn new(buf: &'a mut [u8]) -> Self {
+    #[must_use]
+    pub const fn new(buf: &'a mut [u8]) -> Self {
         Self { pos: 0, buf }
     }
 
+    #[must_use]
     pub fn get_data(&self) -> &[u8] {
         self.buf
     }
 
+    #[must_use]
     pub fn get_data_slice(&self) -> &[u8] {
         &self.buf[..self.pos]
     }
 
+    #[must_use]
     pub fn pos(&self) -> usize {
         self.pos
     }
@@ -38,25 +44,30 @@ impl<'a> StreamBufWriter<'a> {
         self.pos = 0;
     }
 
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.pos == 0
     }
 
+    #[must_use]
     pub fn is_full(&self) -> bool {
         //self.bytes_remaining() == 0
         //self.is_available(1)
         self.pos >= self.buf.len()
     }
 
+    #[must_use]
     pub fn bytes_remaining(&self) -> usize {
         let rem: isize = self.buf.len().cast_signed() - self.pos.cast_signed();
         if rem <= 0 { 0_usize } else { rem.cast_unsigned() }
     }
 
+    #[must_use]
     pub fn is_available(&self, size: usize) -> bool {
         self.pos + size <= self.buf.len()
     }
 
+    #[must_use]
     pub fn bytes_written(&self) -> usize {
         self.pos
     }
@@ -65,10 +76,12 @@ impl<'a> StreamBufWriter<'a> {
         self.pos = (self.pos + n).min(self.buf.len());
     }
 
+    #[must_use]
     pub fn get_ref(&self) -> &[u8] {
         &self.buf[..self.pos]
     }
 
+    #[must_use]
     pub fn at(&self, index: usize) -> u8 {
         self.buf[index]
     }
@@ -237,7 +250,7 @@ impl<'a> StreamBufWriter<'a> {
     }
 }
 
-/// Access `StreamBufWriter` component by index
+/// Access `StreamBufWriter` component by index.
 impl Index<usize> for StreamBufWriter<'_> {
     type Output = u8;
     fn index(&self, index: usize) -> &u8 {
@@ -245,7 +258,7 @@ impl Index<usize> for StreamBufWriter<'_> {
     }
 }
 
-/// Set `StreamBufWriter` component by index
+/// Set `StreamBufWriter` component by index.
 impl IndexMut<usize> for StreamBufWriter<'_> {
     fn index_mut(&mut self, index: usize) -> &mut u8 {
         &mut self.buf[index]
@@ -273,7 +286,7 @@ buf.write_u16(0x1234);
 mod tests {
     #![allow(clippy::float_cmp)]
     use super::*;
-    
+
     #[test]
     fn new() {
         const BUF_SIZE: usize = 64;

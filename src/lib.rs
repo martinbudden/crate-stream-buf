@@ -6,9 +6,7 @@
 #![deny(unused_must_use)]
 #![warn(unused_results)]
 #![warn(clippy::pedantic)]
-#![allow(clippy::inline_always)]
-#![allow(clippy::return_self_not_must_use)]
-#![allow(clippy::must_use_candidate)]
+#![warn(clippy::doc_paragraphs_missing_punctuation)]
 
 mod stream_buf_reader;
 mod stream_buf_writer;
