@@ -23,11 +23,20 @@ Once the API has stabilized this project will adopt semantic versioning, the fir
 
 ### Security
 
-## [0.1.1] - 2023-06-xx
+## [0.1.1] - 2023-06-21
+
+### Added
+
+- #[must_use] attribute to selected functions.
+
+### Changed
+
+- Fixed documentation punctuation.
 
 ### Removed
 
 - Removed `katex-header.html`.
+- `allow`s from `lib.rs`.
 
 ## [0.1.0] - 2023-04-25
 
