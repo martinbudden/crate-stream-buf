@@ -3,11 +3,17 @@
         "autocfg",
         "Budden",
         "bytemuck",
+        "clippy",
         "codegen",
         "debuginfo",
+        "dtolnay",
         "katex",
         "libm",
+        "msrv",
         "rustdoc",
-        "sbuf"
+        "RUSTDOCFLAGS",
+        "sbuf",
+        "swatinem",
+        "xtask"
     ]
 }

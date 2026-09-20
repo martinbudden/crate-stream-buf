@@ -9,19 +9,15 @@ that is each release may contain incompatible API changes.
 
 Once the API has stabilized this project will adopt semantic versioning, the first release to do so will be `0.2.0`.
 
-## [Unreleased]
+## [0.1.3] - 2026-09-xx
 
 ### Added
 
+- support for Continuous Integration.
+
 ### Changed
 
-### Removed
-
-### Deprecated
-
-### Fixed
-
-### Security
+- updated to Rust version 1.89.
 
 ## [0.1.2] - 2026-07-04
 

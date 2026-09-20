@@ -1,7 +1,6 @@
 #![allow(unused)]
 
-use core::mem;
-use core::ops::Index;
+use core::{mem, ops::Index};
 
 /// Simple deserializer.
 #[derive(Clone, Copy, Debug, PartialEq)]

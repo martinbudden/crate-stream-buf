@@ -1,1 +1,4 @@
 /target
+examples/target
+xtask/target
+notes/*

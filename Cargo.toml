@@ -2,6 +2,7 @@
 name = "stream-buf"
 version = "0.1.2"
 edition = "2024"
+rust-version = "1.89"
 authors = ["Martin Budden"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -52,3 +53,9 @@ rpath = false
 [profile.release-lto]
 inherits = "release"
 lto = true
+
+[workspace]
+members = [
+    ".",
+    "xtask",
+]

@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::stream_buf_reader::StreamBufReader;
+use super::stream_buf_reader::StreamBufReader;
 use core::{
     mem,
     ops::{Index, IndexMut},
